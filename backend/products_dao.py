@@ -1,6 +1,9 @@
 import mysql.connector
+from dotenv import load_dotenv
+import os
 
-cnx = mysql.connector.connect(user='root', password='1234frog',
+load_dotenv()
+cnx = mysql.connector.connect(user=os.getenv("username1"), password=os.getenv("password"),
                               host='127.0.0.1',
                               database='grocery_store')
 
@@ -14,3 +17,5 @@ for(product_id,name, uom_id, price_per_unit) in cursor:
 
 
 cnx.close()
+
+
