@@ -1,21 +1,50 @@
-import mysql.connector
-from dotenv import load_dotenv
-import os
+from sql_connection import get_sql_connection
 
-load_dotenv()
-cnx = mysql.connector.connect(user=os.getenv("username1"), password=os.getenv("password"),
-                              host='127.0.0.1',
-                              database='grocery_store')
+def get_all_products(connection):
+    cursor = connection.cursor()
 
-cursor = cnx.cursor()
+    query = ("SELECT products.product_id, products.product_name, products.uom, products.price_per_unit, uom.uomcol "
+            " FROM grocery_store.products inner join grocery_store.uom on products.uom=uom.uom_id;")
 
-query = "SELECT * FROM grocery_store.products"
+    cursor.execute(query)
+    response = []
+    for(product_id,name, uom_id, price_per_unit, uomcol) in cursor:
+        response.append(
+            {
+            "product_id": product_id,
+            "name": name,
+            "uom_id": uom_id, 
+            "price_per_unit": price_per_unit,
+            "measure: ": uomcol
+            }
+        )
 
-cursor.execute(query)
-for(product_id,name, uom_id, price_per_unit) in cursor:
-    print(product_id,name,uom_id, price_per_unit)
+
+    connection.close()
+
+    return response
 
 
-cnx.close()
+def insert_new_product(connection, product):
+    cursor = connection.cursor()
+    query = ("insert into grocery_store.products (product_name, uom, price_per_unit) " 
+             "values (%s, %s, %s); ")
+    data = (product['product_name'], product['uom'], product['price_per_unit'])
+    cursor.execute(query,data)
+    connection.commit()
+
+    return cursor.lastrowid
+
+def delete_product(connection, product_id):
+    cursor = connection.cursor()
+    query = ("DELETE FROM grocery_store.products where product_id="+ str(product_id))
+    cursor.execute(query)
+    connection.commit()
+
+
+
+if __name__ == '__main__':
+    connection = get_sql_connection()
+    print(delete_product(connection, 11))
 
 
